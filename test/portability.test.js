@@ -101,6 +101,7 @@ test('release promotion is main-push CI-gated, idempotent, and checksum-producin
   assert.match(workflow, /actions:\s*write/);
   assert.match(workflow, /major_tag="v\$\{VERSION%%\.\*\}"/);
   assert.match(workflow, /git\/refs\/tags\/\$\{major_tag\}/);
+  assert.match(workflow, /name: Move the floating major tag\s+if: steps\.existing\.outputs\.found != 'true'\s+continue-on-error: true/);
   assert.match(workflow, /gh workflow run release\.yml.*tag=/);
   assert.doesNotMatch(workflow, /pull_request_target/);
 });
