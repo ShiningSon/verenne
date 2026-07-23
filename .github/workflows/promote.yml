@@ -6,6 +6,7 @@ on:
     types: [completed]
 
 permissions:
+  actions: write
   contents: write
 
 concurrency:
@@ -87,3 +88,11 @@ jobs:
             --target "${SHA}" \
             --title "Verenne Code ${VERSION}" \
             --generate-notes
+      - name: Dispatch trusted npm publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.meta.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run release.yml --ref main --field tag="${TAG}"

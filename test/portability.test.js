@@ -79,6 +79,8 @@ test('npm artifact is zero-dependency, contains its public essentials, and expos
 test('release publishing is OIDC-only and bootstrap-idempotent for the same git commit', async () => {
   const workflow = await readFile(path.join(projectRoot, '.github', 'workflows', 'release.yml'), 'utf8');
   assert.match(workflow, /id-token:\s*write/);
+  assert.match(workflow, /workflow_dispatch:/);
+  assert.match(workflow, /github\.event\.release\.tag_name \|\| inputs\.tag/);
   assert.match(workflow, /npm view .*gitHead/);
   assert.match(workflow, /published_head.*local_head/);
   assert.match(workflow, /steps\.registry\.outputs\.already_published != 'true'/);
@@ -96,6 +98,8 @@ test('release promotion is main-push CI-gated, idempotent, and checksum-producin
   assert.match(workflow, /steps\.existing\.outputs\.found != 'true'/);
   assert.match(workflow, /sha256sum/);
   assert.match(workflow, /gh release create/);
+  assert.match(workflow, /actions:\s*write/);
+  assert.match(workflow, /gh workflow run release\.yml.*tag=/);
   assert.doesNotMatch(workflow, /pull_request_target/);
 });
 

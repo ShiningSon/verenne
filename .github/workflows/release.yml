@@ -3,24 +3,31 @@ name: Release
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to publish to npm
+        required: true
+        type: string
 
 permissions:
   contents: read
   id-token: write
 
 concurrency:
-  group: release-${{ github.event.release.tag_name }}
+  group: release-${{ github.event.release.tag_name || inputs.tag }}
   cancel-in-progress: false
 
 jobs:
   npm:
-    if: startsWith(github.event.release.tag_name, 'v')
+    if: startsWith(github.event.release.tag_name || inputs.tag, 'v')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: npm
     steps:
       - uses: actions/checkout@v6
         with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
           persist-credentials: false
       - uses: actions/setup-node@v6
         with:
@@ -31,7 +38,7 @@ jobs:
       - run: npm run check
       - name: Verify release tag matches package version
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
         run: node -e "const p=require('./package.json');if(process.env.RELEASE_TAG!=='v'+p.version){console.error('Release tag must equal v'+p.version);process.exit(1)}"
       - run: npm pack --dry-run --json
       - name: Check whether this exact commit is already published
