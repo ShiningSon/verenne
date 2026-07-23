@@ -76,6 +76,15 @@ test('npm artifact is zero-dependency, contains its public essentials, and expos
   assert.ok([...paths].every((file) => !file.startsWith('test/') && !file.startsWith('work/')));
 });
 
+test('release publishing is OIDC-only and bootstrap-idempotent for the same git commit', async () => {
+  const workflow = await readFile(path.join(projectRoot, '.github', 'workflows', 'release.yml'), 'utf8');
+  assert.match(workflow, /id-token:\s*write/);
+  assert.match(workflow, /npm view .*gitHead/);
+  assert.match(workflow, /published_head.*local_head/);
+  assert.match(workflow, /steps\.registry\.outputs\.already_published != 'true'/);
+  assert.doesNotMatch(workflow, /^\s+NODE_AUTH_TOKEN:/m);
+});
+
 test('trusted executable lookup ignores candidate-controlled PATH entries', async (t) => {
   const candidate = await temporaryDirectory(t);
   const realGit = resolveTrustedExecutable('git');

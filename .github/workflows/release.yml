@@ -34,6 +34,25 @@ jobs:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: node -e "const p=require('./package.json');if(process.env.RELEASE_TAG!=='v'+p.version){console.error('Release tag must equal v'+p.version);process.exit(1)}"
       - run: npm pack --dry-run --json
+      - name: Check whether this exact commit is already published
+        id: registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_name=$(node -p "require('./package.json').name")
+          package_version=$(node -p "require('./package.json').version")
+          local_head=$(git rev-parse HEAD)
+          if published_head=$(npm view "${package_name}@${package_version}" gitHead --silent 2>/dev/null); then
+            if [ -z "${published_head}" ] || [ "${published_head}" != "${local_head}" ]; then
+              echo "Registry version exists but its gitHead does not match ${local_head}." >&2
+              exit 1
+            fi
+            echo "already_published=true" >> "${GITHUB_OUTPUT}"
+            echo "Registry already contains this exact commit; skipping a duplicate publish."
+          else
+            echo "already_published=false" >> "${GITHUB_OUTPUT}"
+          fi
       # npm exchanges the GitHub OIDC token for a short-lived publishing
       # credential. No NODE_AUTH_TOKEN is stored; provenance is automatic.
-      - run: npm publish
+      - if: steps.registry.outputs.already_published != 'true'
+        run: npm publish
