@@ -1,0 +1,24 @@
+name: Feature request
+description: Propose an outcome Verenne Code should support.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What coding-agent workflow is difficult or unsafe today?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the user-visible result and how it could be independently verified.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional related tools, workarounds, or tradeoffs.

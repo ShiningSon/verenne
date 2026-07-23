@@ -1,0 +1,36 @@
+name: Bug report
+description: Report a reproducible Verenne Code defect.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping make evidence-led coding more reliable. Do not report security vulnerabilities here; use private vulnerability reporting.
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected and actual outcome
+      description: What did you ask Verenne to do, what should have happened, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Verenne version
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node.js version, Git version, and provider CLI/version. Remove tokens and private paths.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include commands, policy, and a share-safe case file when possible.
+    validations:
+      required: true

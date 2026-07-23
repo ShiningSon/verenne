@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "tasks": [
+    {
+      "id": "contract",
+      "title": "Define the behavior contract",
+      "task": "Inspect the requested change and add or refine executable acceptance tests without implementing the feature.",
+      "dependsOn": [],
+      "agent": "claude"
+    },
+    {
+      "id": "implementation",
+      "title": "Implement the feature",
+      "task": "Implement the requested behavior with the smallest production-quality patch.",
+      "dependsOn": ["contract"],
+      "agent": "codex"
+    },
+    {
+      "id": "adversarial-review",
+      "title": "Adversarial review",
+      "task": "Look for missing edge cases, security regressions, scope drift, and misleading completion claims.",
+      "type": "review",
+      "allowEmpty": true,
+      "dependsOn": ["implementation"],
+      "agent": "opencode"
+    }
+  ]
+}

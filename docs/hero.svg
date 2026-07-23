@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Verenne Code — Many agents. One accountable result.</title>
+  <desc id="desc">Claude Code, Codex, OpenCode and other coding agents race in isolated worktrees. Verenne independently verifies their claims and produces one sealed patch.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#101a24"/><stop offset=".52" stop-color="#080d12"/><stop offset="1" stop-color="#151126"/>
+    </linearGradient>
+    <linearGradient id="aurora" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#66d9ef"/><stop offset=".5" stop-color="#b69cff"/><stop offset="1" stop-color="#55d98a"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <style>
+      .sans{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}.mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}.muted{fill:#9baaba}.line{stroke:#293846}.panel{fill:#111820;stroke:#2a3948}.tiny{font-size:11px;letter-spacing:1.3px}.small{font-size:14px}.label{font-size:12px;font-weight:700}.agent{font-size:17px;font-weight:750}.metric{font-size:13px;font-weight:700}
+    </style>
+  </defs>
+  <rect width="1200" height="630" fill="url(#background)"/>
+  <circle cx="1080" cy="-40" r="320" fill="#66d9ef" opacity=".045"/>
+  <circle cx="1110" cy="620" r="300" fill="#b69cff" opacity=".05"/>
+  <rect x="0" y="0" width="1200" height="5" fill="url(#aurora)"/>
+  <path d="M170 448 C350 380 498 485 675 416 S968 365 1115 438" fill="none" stroke="url(#aurora)" stroke-width="30" opacity=".07" filter="url(#glow)"/>
+
+  <g transform="translate(58 45)">
+    <rect width="42" height="42" rx="11" fill="none" stroke="#66d9ef"/>
+    <text x="21" y="27" text-anchor="middle" class="mono label" fill="#66d9ef">VC</text>
+    <text x="56" y="29" class="sans" font-size="21" font-weight="800" fill="#f2f6fa">Verenne Code</text>
+  </g>
+  <text x="1142" y="70" text-anchor="end" class="mono tiny" fill="#66d9ef">EVIDENCE-LED CODING ORCHESTRATION · 1.0.0</text>
+
+  <text x="58" y="162" class="sans" font-size="54" font-weight="820" letter-spacing="-2.3" fill="#f2f6fa">Many agents.</text>
+  <text x="58" y="222" class="sans" font-size="54" font-weight="820" letter-spacing="-2.3" fill="url(#aurora)">One accountable result.</text>
+  <text x="60" y="262" class="sans" font-size="18" fill="#a9b7c5">Race frontier coding agents. Replay trusted checks. Cross-examine every claim.</text>
+  <text x="60" y="289" class="sans" font-size="18" fill="#a9b7c5">Only an evidence-approved, digest-bound patch reaches your working tree.</text>
+
+  <g transform="translate(58 348)">
+    <rect width="260" height="76" rx="13" class="panel"/>
+    <circle cx="34" cy="38" r="17" fill="#66d9ef" opacity=".12"/>
+    <text x="34" y="43" text-anchor="middle" class="mono label" fill="#66d9ef">C</text>
+    <text x="64" y="32" class="sans agent" fill="#f2f6fa">Claude Code</text>
+    <text x="64" y="53" class="mono tiny muted">OPUS · MAX</text>
+    <rect x="190" y="27" width="51" height="22" rx="11" fill="#17232c" stroke="#395064"/>
+    <text x="215.5" y="42" text-anchor="middle" class="mono" font-size="9" fill="#a9b7c5">RACING</text>
+  </g>
+  <g transform="translate(58 438)">
+    <rect width="260" height="76" rx="13" class="panel"/>
+    <circle cx="34" cy="38" r="17" fill="#b69cff" opacity=".12"/>
+    <text x="34" y="43" text-anchor="middle" class="mono label" fill="#b69cff">X</text>
+    <text x="64" y="32" class="sans agent" fill="#f2f6fa">OpenAI Codex</text>
+    <text x="64" y="53" class="mono tiny muted">FRONTIER · XHIGH</text>
+    <rect x="190" y="27" width="51" height="22" rx="11" fill="#17232c" stroke="#395064"/>
+    <text x="215.5" y="42" text-anchor="middle" class="mono" font-size="9" fill="#a9b7c5">RACING</text>
+  </g>
+  <g transform="translate(58 528)">
+    <rect width="260" height="58" rx="13" class="panel"/>
+    <circle cx="34" cy="29" r="15" fill="#55d98a" opacity=".12"/>
+    <text x="34" y="34" text-anchor="middle" class="mono label" fill="#55d98a">O</text>
+    <text x="64" y="25" class="sans agent" fill="#f2f6fa">OpenCode + more</text>
+    <text x="64" y="44" class="mono tiny muted">ANY PROVIDER MODEL</text>
+  </g>
+
+  <g class="line" fill="none" stroke-width="2">
+    <path d="M318 386 H405 Q430 386 430 411 V444"/>
+    <path d="M318 476 H405 Q430 476 430 451 V444"/>
+    <path d="M318 557 H405 Q430 557 430 475 V444"/>
+    <path d="M430 444 H540"/>
+  </g>
+  <circle cx="430" cy="444" r="7" fill="#b69cff"/>
+
+  <g transform="translate(540 348)">
+    <rect width="292" height="196" rx="17" fill="#111820" stroke="#b69cff" stroke-opacity=".7"/>
+    <text x="22" y="30" class="mono tiny" fill="#b69cff">EVIDENCE COURT</text>
+    <text x="22" y="62" class="sans" font-size="22" font-weight="800" fill="#f2f6fa">Claims, not agents,</text>
+    <text x="22" y="88" class="sans" font-size="22" font-weight="800" fill="#f2f6fa">are on trial.</text>
+    <g transform="translate(22 112)">
+      <rect width="73" height="28" rx="8" fill="#55d98a" opacity=".12" stroke="#55d98a"/><text x="36.5" y="19" text-anchor="middle" class="mono" font-size="9" fill="#55d98a">PROVEN</text>
+      <rect x="83" width="100" height="28" rx="8" fill="#ff6b6b" opacity=".1" stroke="#ff6b6b"/><text x="133" y="19" text-anchor="middle" class="mono" font-size="9" fill="#ff8a8a">CONTRADICTED</text>
+      <rect x="193" width="77" height="28" rx="8" fill="#a9b7c5" opacity=".08" stroke="#526577"/><text x="231.5" y="19" text-anchor="middle" class="mono" font-size="9" fill="#a9b7c5">UNPROVEN</text>
+    </g>
+    <text x="22" y="171" class="mono tiny muted">BASE POLICY · DUAL REPLAY · INTENT LINKS</text>
+  </g>
+
+  <path d="M832 444 H900" class="line" fill="none" stroke-width="2"/>
+  <circle cx="866" cy="444" r="7" fill="#55d98a"/>
+  <g transform="translate(900 374)">
+    <rect width="242" height="140" rx="17" fill="#101d19" stroke="#55d98a" stroke-opacity=".75"/>
+    <circle cx="28" cy="30" r="9" fill="#55d98a"/>
+    <text x="48" y="35" class="mono tiny" fill="#55d98a">READY</text>
+    <text x="22" y="72" class="sans" font-size="24" font-weight="820" fill="#f2f6fa">Sealed patch</text>
+    <text x="22" y="99" class="sans small muted">Digest-bound · replayed</text>
+    <text x="22" y="122" class="mono tiny" fill="#a9b7c5">APPLY ONLY WHEN YOU CHOOSE</text>
+  </g>
+
+  <text x="1142" y="595" text-anchor="end" class="mono tiny" fill="#7f91a2">ARENA · SWARM · RELAY · GITHUB ACTION · MCP</text>
+</svg>

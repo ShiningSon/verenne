@@ -1,0 +1,41 @@
+name: Verenne Code Verdict
+description: Bind requested outcomes to claims, independently replay base-owned gates, and block unsupported pull-request claims.
+author: ShiningSon
+inputs:
+  base:
+    description: Trusted base commit SHA or ref containing policy and verification inputs; inferred from the event when omitted.
+    required: false
+  task:
+    description: Requested outcome or acceptance criteria used to build the Intent Contract.
+    required: false
+  claims:
+    description: JSON claim file, or `pr-body` to treat pull-request list items as required claims linked to the outcome.
+    required: false
+    default: pr-body
+  output:
+    description: Report output directory.
+    required: false
+    default: .verenne/report
+outputs:
+  verdict:
+    description: VERIFIED only when required outcomes, claims, trust rules, and replay gates are satisfied; otherwise BLOCKED.
+  proven:
+    description: Number of proven claims.
+  contradicted:
+    description: Number of contradicted claims.
+  unproven:
+    description: Number of unproven claims.
+  report-path:
+    description: Standalone HTML case file path.
+  sarif-path:
+    description: SARIF 2.1.0 results path, suitable for github/codeql-action/upload-sarif.
+  report-json-path:
+    description: Share-safe JSON case record path.
+  share-card-path:
+    description: SVG verdict card path.
+runs:
+  using: node24
+  main: src/action.js
+branding:
+  icon: check-circle
+  color: purple

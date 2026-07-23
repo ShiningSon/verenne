@@ -1,0 +1,62 @@
+{
+  "name": "verenne",
+  "version": "1.0.0",
+  "description": "Evidence-led orchestration for Claude Code, Codex, OpenCode, Gemini CLI, Aider, and custom coding agents.",
+  "type": "module",
+  "sideEffects": false,
+  "bin": {
+    "verenne": "bin/verenne.js"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShiningSon/verenne.git"
+  },
+  "homepage": "https://github.com/ShiningSon/verenne#readme",
+  "bugs": {
+    "url": "https://github.com/ShiningSon/verenne/issues"
+  },
+  "files": [
+    "bin",
+    "src",
+    "examples",
+    "docs/hero.svg",
+    "action.yml",
+    "README.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "NOTICE",
+    "SECURITY.md"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "test:all": "node --test --test-reporter=spec",
+    "demo": "node ./bin/verenne.js demo",
+    "check": "node --check ./bin/verenne.js && node --test",
+    "prepack": "node --check ./bin/verenne.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "coding-agent",
+    "multi-agent",
+    "git-worktree",
+    "claude-code",
+    "codex",
+    "opencode",
+    "gemini-cli",
+    "aider",
+    "agent-orchestration",
+    "evidence",
+    "ai",
+    "verification"
+  ],
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  }
+}

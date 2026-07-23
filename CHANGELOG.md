@@ -1,0 +1,13 @@
+# Changelog
+
+All notable changes to Verenne Code are documented here. The project follows semantic versioning.
+
+## 1.0.0 — 2026-07-23
+
+- First production release of Arena, Swarm, Relay, and current-patch verification.
+- Native adapters for Claude Code, OpenAI Codex, OpenCode, Gemini CLI, Aider, and custom agents.
+- Fail-closed Intent Contracts that link required outcomes to observed paths, base-owned gates, and specifically proven claim IDs.
+- Clean candidate replay plus base-restored replay when tests, runners, manifests, lockfiles, or other verification inputs change.
+- Credentialless candidate bootstrap, isolated gate homes, sealed patch application, and share-safe case files.
+- Terminal-first command center with accessible Arena, diff, intent, and evidence views.
+- GitHub Action, MCP server, local memory, provider-native model/effort forwarding, process-tree cancellation with persisted mission state, and zero-dependency runtime.
