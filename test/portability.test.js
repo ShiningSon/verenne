@@ -85,6 +85,20 @@ test('release publishing is OIDC-only and bootstrap-idempotent for the same git 
   assert.doesNotMatch(workflow, /^\s+NODE_AUTH_TOKEN:/m);
 });
 
+test('release promotion is main-push CI-gated, idempotent, and checksum-producing', async () => {
+  const workflow = await readFile(path.join(projectRoot, '.github', 'workflows', 'promote.yml'), 'utf8');
+  assert.match(workflow, /workflow_run:/);
+  assert.match(workflow, /workflow_run\.conclusion == 'success'/);
+  assert.match(workflow, /workflow_run\.event == 'push'/);
+  assert.match(workflow, /workflow_run\.head_branch == 'main'/);
+  assert.match(workflow, /ref:\s*\$\{\{ github\.event\.workflow_run\.head_sha \}\}/);
+  assert.match(workflow, /gh release view/);
+  assert.match(workflow, /steps\.existing\.outputs\.found != 'true'/);
+  assert.match(workflow, /sha256sum/);
+  assert.match(workflow, /gh release create/);
+  assert.doesNotMatch(workflow, /pull_request_target/);
+});
+
 test('trusted executable lookup ignores candidate-controlled PATH entries', async (t) => {
   const candidate = await temporaryDirectory(t);
   const realGit = resolveTrustedExecutable('git');

@@ -1,0 +1,89 @@
+name: Promote release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: promote-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Resolve release identity
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          package_name=$(node -p "require('./package.json').name")
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+          echo "tag=v${version}" >> "${GITHUB_OUTPUT}"
+          echo "archive=${package_name}-${version}" >> "${GITHUB_OUTPUT}"
+      - name: Check for an existing release
+        id: existing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.meta.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "found=true" >> "${GITHUB_OUTPUT}"
+            echo "${TAG} is already published; nothing to promote."
+          else
+            echo "found=false" >> "${GITHUB_OUTPUT}"
+          fi
+      - name: Build release assets
+        if: steps.existing.outputs.found != 'true'
+        env:
+          ARCHIVE: ${{ steps.meta.outputs.archive }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          npm pack --pack-destination dist --json >/dev/null
+          git archive --format=zip --prefix="${ARCHIVE}/" --output="dist/${ARCHIVE}-source.zip" HEAD
+          (
+            cd dist
+            sha256sum "${ARCHIVE}.tgz" "${ARCHIVE}-source.zip" > "${ARCHIVE}-SHA256SUMS.txt"
+          )
+      - name: Publish GitHub release
+        if: steps.existing.outputs.found != 'true'
+        env:
+          ARCHIVE: ${{ steps.meta.outputs.archive }}
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "${TAG}" \
+            "dist/${ARCHIVE}.tgz" \
+            "dist/${ARCHIVE}-source.zip" \
+            "dist/${ARCHIVE}-SHA256SUMS.txt" \
+            --target "${SHA}" \
+            --title "Verenne Code ${VERSION}" \
+            --generate-notes

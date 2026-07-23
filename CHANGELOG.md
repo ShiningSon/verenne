@@ -7,6 +7,7 @@ All notable changes to Verenne Code are documented here. The project follows sem
 - Make zero-command startup work outside Git repositories by prompting for a project folder.
 - Accept quoted and drag-and-dropped repository paths, retry invalid selections, and keep startup non-destructive.
 - Give non-interactive and invalid `--repo` runs concise, actionable guidance instead of a raw Git error.
+- Promote new versions to GitHub Releases only after the full cross-platform CI workflow succeeds.
 
 ## 1.0.0 — 2026-07-23
 
