@@ -5,6 +5,7 @@
 ![Verenne Code — Many agents. One accountable result.](docs/hero.svg)
 
 [![CI](https://github.com/ShiningSon/verenne/actions/workflows/ci.yml/badge.svg)](https://github.com/ShiningSon/verenne/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/verenne.svg)](https://www.npmjs.com/package/verenne)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 Verenne Code is an evidence-led coding interface for Claude Code, OpenAI Codex, OpenCode, Gemini CLI, Aider, and custom agents. It gives several agents isolated attempts, replays trusted checks independently, cross-examines what each agent claims, and lets only an evidence-approved patch reach your working tree.
@@ -15,31 +16,31 @@ The product is local-first, dependency-free at runtime, and designed for one-com
 
 Requirements: Node.js 20+, Git, and at least one supported coding-agent CLI.
 
-The current one-line source install is available from the public GitHub repository:
-
-```bash
-npx --yes github:ShiningSon/verenne
-```
-
-After [`verenne@1.0.0` is visible on npm](https://www.npmjs.com/package/verenne), the shorter command becomes the recommended stable-release path:
+Start the stable release without a global install:
 
 ```bash
 npx verenne
 ```
 
-Until that npm page shows a published version, use the GitHub command above. Both paths start the interactive session without a global Verenne install. Verenne detects installed agents, asks for the change in plain language, and chooses safe defaults. No Verenne account, daemon, or mandatory config file is required.
+To run the current source directly from GitHub instead:
+
+```bash
+npx --yes github:ShiningSon/verenne
+```
+
+Both paths start the interactive session without a global Verenne install. Verenne detects installed agents, asks for the change in plain language, and chooses safe defaults. No Verenne account, daemon, or mandatory config file is required.
 
 For a non-interactive run:
 
 ```bash
-npx --yes github:ShiningSon/verenne run "Fix the authentication race and add regression coverage" --profile frontier
+npx verenne run "Fix the authentication race and add regression coverage" --profile frontier
 ```
 
 Then inspect and apply the result:
 
 ```bash
-npx --yes github:ShiningSon/verenne dashboard latest
-npx --yes github:ShiningSon/verenne apply latest
+npx verenne dashboard latest
+npx verenne apply latest
 ```
 
 `apply` requires a clean working tree, the verified base commit, and an untampered sealed patch. It never commits unless `--commit` is explicitly supplied.
@@ -78,7 +79,7 @@ Arena is the default because it needs no planning ceremony. Swarm and Relay are 
 Verenne uses each provider's native model controls. Built-in adapters pass arbitrary full model identifiers through to the installed CLI, so a new model does not require a Verenne release. Model availability still depends on the provider account and CLI version.
 
 ```bash
-npx --yes github:ShiningSon/verenne run "Implement the feature" \
+npx verenne run "Implement the feature" \
   --agents claude,codex,opencode \
   --model claude=opus \
   --model codex=gpt-5.6-sol \
