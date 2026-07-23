@@ -88,6 +88,25 @@ jobs:
             --target "${SHA}" \
             --title "Verenne Code ${VERSION}" \
             --generate-notes
+      - name: Move the floating major tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          major_tag="v${VERSION%%.*}"
+          target_sha=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" --jq '.object.sha')
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${major_tag}" >/dev/null 2>&1; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/${major_tag}" \
+              --field sha="${target_sha}" \
+              --field force=true >/dev/null
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
+              --field ref="refs/tags/${major_tag}" \
+              --field sha="${target_sha}" >/dev/null
+          fi
       - name: Dispatch trusted npm publishing
         env:
           GH_TOKEN: ${{ github.token }}
