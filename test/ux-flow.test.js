@@ -13,6 +13,7 @@ import {
   formatAdapterChoice,
   interactiveSession,
   readTaskInput,
+  resolveSessionRepoRoot,
   selectAvailableAdapters,
 } from '../src/terminal-ui.js';
 
@@ -179,6 +180,140 @@ test('provider failures include a concise next action without rewriting native e
 test('piped task input preserves multiline instructions and enforces a size limit', async () => {
   assert.equal(await readTaskInput(Readable.from(['First line\n', 'Second line\n'])), 'First line\nSecond line');
   await assert.rejects(readTaskInput(Readable.from(['12345']), 4), /safety limit/i);
+});
+
+test('interactive startup asks for a repository when launched elsewhere and accepts a quoted path', async () => {
+  const output = captureStream();
+  Object.defineProperty(output, 'isTTY', { value: true });
+  const calls = [];
+  const selected = path.resolve('/fixture/repo with spaces');
+  const input = Readable.from([`"${selected}"\n`]);
+  Object.defineProperty(input, 'isTTY', { value: true });
+  const result = await resolveSessionRepoRoot({
+    input,
+    output,
+    cwd: path.resolve('/fixture/outside'),
+    findRepoRoot: async (candidate) => {
+      calls.push(candidate);
+      if (candidate === selected) return selected;
+      throw new Error('outside repository');
+    },
+  });
+  assert.equal(result, selected);
+  assert.deepEqual(calls, [path.resolve('/fixture/outside'), selected]);
+  assert.match(output.content, /No Git project is open/i);
+  assert.match(output.content, /Project folder/i);
+  assert.match(output.content, /Opened/i);
+});
+
+test('an explicit valid repo bypasses selection in both TTY and non-TTY sessions', async () => {
+  const cwd = path.resolve('/fixture/outside');
+  const requested = path.join('nested', 'repo');
+  const resolvedRequest = path.resolve(cwd, requested);
+  const canonical = path.resolve('/fixture/canonical/repo');
+  for (const interactive of [true, false]) {
+    const output = captureStream();
+    const calls = [];
+    const result = await resolveSessionRepoRoot({
+      input: Readable.from([]),
+      output,
+      interactive,
+      repoRoot: requested,
+      cwd,
+      findRepoRoot: async (candidate) => { calls.push(candidate); return canonical; },
+    });
+    assert.equal(result, canonical);
+    assert.deepEqual(calls, [resolvedRequest]);
+    assert.doesNotMatch(output.content, /Project folder/i);
+  }
+});
+
+test('mixed TTY startup never opens a prompt', async () => {
+  for (const [inputTTY, outputTTY] of [[true, false], [false, true], [false, false]]) {
+    const input = Readable.from(['must not be consumed']);
+    const output = captureStream();
+    Object.defineProperty(input, 'isTTY', { value: inputTTY });
+    Object.defineProperty(output, 'isTTY', { value: outputTTY });
+    await assert.rejects(resolveSessionRepoRoot({
+      input,
+      output,
+      cwd: path.resolve('/fixture/outside'),
+      findRepoRoot: async () => { throw new Error('outside repository'); },
+    }), /--repo <path>/i);
+    assert.doesNotMatch(output.content, /Project folder/i);
+  }
+});
+
+test('blank interactive project selection exits without loading config or running agents', async () => {
+  const input = Readable.from(['\n']);
+  const output = captureStream();
+  Object.defineProperty(input, 'isTTY', { value: true });
+  Object.defineProperty(output, 'isTTY', { value: true });
+  let downstreamCalls = 0;
+  const result = await interactiveSession({
+    input,
+    output,
+    cwd: path.resolve('/fixture/outside'),
+    findRepoRoot: async () => { throw new Error('outside repository'); },
+    loadConfig: async () => { downstreamCalls += 1; return baseConfig(); },
+    inspectAdapters: async () => { downstreamCalls += 1; return []; },
+    runMission: async () => { downstreamCalls += 1; },
+  });
+  assert.equal(result, null);
+  assert.equal(downstreamCalls, 0);
+  assert.match(output.content, /No project selected; nothing was changed/i);
+});
+
+test('interactive repository selection retries invalid input without initializing folders', async () => {
+  const output = captureStream();
+  const cwd = path.resolve('/fixture/outside');
+  const invalid = path.resolve(cwd, 'plain-folder');
+  const selected = path.resolve(cwd, 'repo');
+  const calls = [];
+  const answers = ['plain-folder', 'repo'];
+  const result = await resolveSessionRepoRoot({
+    input: Readable.from([]),
+    output,
+    interactive: true,
+    cwd,
+    createInterface: () => ({
+      question: async () => answers.shift(),
+      close() {},
+    }),
+    findRepoRoot: async (candidate) => {
+      calls.push(candidate);
+      if (candidate === selected) return selected;
+      throw new Error('outside repository');
+    },
+  });
+  assert.equal(result, selected);
+  assert.deepEqual(calls, [cwd, invalid, selected]);
+  assert.match(output.content, /Not a Git repository/i);
+});
+
+test('noninteractive startup outside Git gives an actionable repo option', async () => {
+  await assert.rejects(resolveSessionRepoRoot({
+    input: Readable.from([]),
+    output: captureStream(),
+    interactive: false,
+    cwd: path.resolve('/fixture/outside'),
+    findRepoRoot: async () => { throw new Error('outside repository'); },
+  }), /inside a repository.*--repo <path>/i);
+});
+
+test('an explicit invalid repo fails once instead of opening a selection loop', async () => {
+  const output = captureStream();
+  let calls = 0;
+  await assert.rejects(resolveSessionRepoRoot({
+    input: Readable.from(['unused\n']),
+    output,
+    interactive: true,
+    repoRoot: 'missing-repo',
+    cwd: path.resolve('/fixture/outside'),
+    findRepoRoot: async () => { calls += 1; throw new Error('outside repository'); },
+  }), /Cannot open Git project.*existing Git repository/i);
+  assert.equal(calls, 1);
+  assert.doesNotMatch(output.content, /Project folder/i);
 });
 
 test('noninteractive zero-command flow starts immediately without a confirmation prompt', async () => {

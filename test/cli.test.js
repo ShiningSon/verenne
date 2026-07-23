@@ -63,6 +63,26 @@ test('CLI help and version work outside a Git repository and use the installed c
   assert.equal(version.stdout.trim(), VERSION);
 });
 
+test('zero-command noninteractive startup outside Git explains how to select a project', async (t) => {
+  const outsideGit = await temporaryDirectory(t);
+  const result = await runCli([], { cwd: outsideGit });
+  assert.notEqual(result.code, 0);
+  assert.match(result.stderr, /No Git project is open/i);
+  assert.match(result.stderr, /--repo <path>/i);
+  assert.doesNotMatch(result.stderr, /is not inside a Git repository/i);
+  assert.equal(result.stdout, '');
+});
+
+test('--repo rejects missing, empty, and repeated path values with one concise action', async (t) => {
+  const outsideGit = await temporaryDirectory(t);
+  for (const args of [['--repo'], ['--repo='], ['--repo', 'one', '--repo', 'two']]) {
+    const result = await runCli(args, { cwd: outsideGit });
+    assert.notEqual(result.code, 0);
+    assert.match(result.stderr, /--repo requires a path/i);
+    assert.doesNotMatch(result.stderr, /(?:file:\/\/\/|src[\\/]cli\.js|\n\s+at\s)/);
+  }
+});
+
 test('usage mistakes are concise and do not expose local stack traces by default', async (t) => {
   const outsideGit = await temporaryDirectory(t);
   const result = await runCli(['definitely-not-a-command'], { cwd: outsideGit });

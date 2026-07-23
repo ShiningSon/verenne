@@ -252,6 +252,9 @@ export async function main(argv, options = {}) {
   const command = positional.shift();
   if (flags.version || command === 'version') { process.stdout.write(`${VERSION}\n`); return; }
   if (flags.help || command === 'help') { process.stdout.write(help()); return; }
+  if (Object.hasOwn(flags, 'repo') && (typeof flags.repo !== 'string' || !flags.repo.trim())) {
+    throw new Error('--repo requires a path. Example: npx verenne --repo "C:\\path\\to\\project"');
+  }
   if (!command) { await interactiveSession({ repoRoot: flags.repo, signal: options.signal }); return; }
   if (command === 'init') return await commandInit(flags);
   if (command === 'doctor') return await commandDoctor(flags, options);

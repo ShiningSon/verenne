@@ -2,6 +2,12 @@
 
 All notable changes to Verenne Code are documented here. The project follows semantic versioning.
 
+## 1.0.1 — 2026-07-23
+
+- Make zero-command startup work outside Git repositories by prompting for a project folder.
+- Accept quoted and drag-and-dropped repository paths, retry invalid selections, and keep startup non-destructive.
+- Give non-interactive and invalid `--repo` runs concise, actionable guidance instead of a raw Git error.
+
 ## 1.0.0 — 2026-07-23
 
 - First production release of Arena, Swarm, Relay, and current-patch verification.

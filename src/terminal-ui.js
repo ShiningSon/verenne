@@ -1,4 +1,6 @@
 import readline from 'node:readline/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { stdin as defaultInput, stdout as defaultOutput } from 'node:process';
 import { APP_NAME, formatDuration, terminalWidth } from './utils.js';
 import { inspectAdapters, rankAdapterRows } from './adapters.js';
@@ -32,6 +34,76 @@ function printHeader(stream) {
   const color = palette(stream);
   stream.write(`\n${color.violet}${color.bold}${APP_NAME}${color.reset}  ${color.dim}multi-agent coding, decided by evidence${color.reset}\n`);
   stream.write(`${color.dim}${rule(stream)}${color.reset}\n`);
+}
+
+function resolveEnteredPath(value, cwd = process.cwd()) {
+  let entered = String(value ?? '').trim();
+  const quoted = (entered.startsWith('"') && entered.endsWith('"'))
+    || (entered.startsWith("'") && entered.endsWith("'"));
+  if (quoted && entered.length >= 2) entered = entered.slice(1, -1).trim();
+  if (entered === '~') entered = os.homedir();
+  else if (entered.startsWith('~/') || entered.startsWith('~\\')) entered = path.join(os.homedir(), entered.slice(2));
+  return entered ? path.resolve(cwd, entered) : '';
+}
+
+function displayPath(value) {
+  return String(value).replace(/[\u0000-\u001f\u007f-\u009f]/gu, '?');
+}
+
+export async function resolveSessionRepoRoot(options = {}) {
+  const input = options.input ?? defaultInput;
+  const output = options.output ?? defaultOutput;
+  const interactive = options.interactive ?? Boolean(input?.isTTY && output?.isTTY);
+  const findRoot = options.findRepoRoot ?? findRepoRoot;
+  const cwd = path.resolve(options.cwd ?? process.cwd());
+  const explicitlyRequested = options.repoRoot !== undefined && options.repoRoot !== null && String(options.repoRoot).trim() !== '';
+  const initialPath = resolveEnteredPath(explicitlyRequested ? options.repoRoot : cwd, cwd);
+
+  try {
+    return await findRoot(initialPath);
+  } catch {
+    if (explicitlyRequested) {
+      throw new Error(`Cannot open Git project at "${displayPath(initialPath)}". Choose a folder inside an existing Git repository.`);
+    }
+    if (!interactive) {
+      throw new Error(`No Git project is open in "${displayPath(cwd)}". Run this command inside a repository or run it again with --repo <path>.`);
+    }
+  }
+
+  const color = palette(output);
+  output.write(`\n${color.yellow}${color.bold}No Git project is open in this folder.${color.reset}\n`);
+  output.write(`${color.dim}Enter a repository folder (you can drag the folder here), or press Enter to exit.${color.reset}\n`);
+  const createInterface = options.createInterface ?? ((streams) => readline.createInterface(streams));
+  const ownsInterface = !options.readlineInterface;
+  const rl = options.readlineInterface ?? createInterface({ input, output });
+  try {
+    while (true) {
+      throwIfAborted(options.signal);
+      let entered;
+      try {
+        entered = await rl.question(`${color.cyan}Project folder${color.reset}\n${color.cyan}>${color.reset} `, { signal: options.signal });
+      } catch (error) {
+        if (error?.code !== 'ERR_USE_AFTER_CLOSE') throw error;
+        output.write(`${color.dim}No project selected; nothing was changed.${color.reset}\n`);
+        return null;
+      }
+      const candidate = resolveEnteredPath(entered, cwd);
+      if (!candidate) {
+        output.write(`${color.dim}No project selected; nothing was changed.${color.reset}\n`);
+        return null;
+      }
+      try {
+        const repoRoot = await findRoot(candidate);
+        output.write(`${color.green}Opened${color.reset}  ${displayPath(repoRoot)}\n`);
+        return repoRoot;
+      } catch {
+        output.write(`${color.yellow}Not a Git repository:${color.reset} ${displayPath(candidate)}\n`);
+        output.write(`${color.dim}Choose a folder inside an existing Git repository.${color.reset}\n`);
+      }
+    }
+  } finally {
+    if (ownsInterface) rl.close();
+  }
 }
 
 function verdictColor(value, color) {
@@ -175,34 +247,47 @@ export async function interactiveSession(options = {}) {
   const input = options.input ?? defaultInput;
   const output = options.output ?? defaultOutput;
   const interactive = options.interactive ?? Boolean(input?.isTTY && output?.isTTY);
-  const findRoot = options.findRepoRoot ?? findRepoRoot;
   const load = options.loadConfig ?? loadConfig;
   const inspect = options.inspectAdapters ?? inspectAdapters;
   const run = options.runMission ?? runMission;
-  const repoRoot = await findRoot(options.repoRoot ?? process.cwd());
-  const config = await load(repoRoot);
-  const profile = options.profile ?? (config.profiles?.frontier ? 'frontier' : undefined);
-
-  printHeader(output);
-  output.write(`${palette(output).dim}Detecting compatible coding agents and provider-native model access…${palette(output).reset}\n`);
-  const inspected = await inspect(config, Object.keys(config.adapters ?? {}), { profile, signal: options.signal });
-  const selected = selectAvailableAdapters(config, inspected);
-  if (!selected.length) {
-    printNoAdapters(output, inspected);
-    return null;
-  }
-  printAdapterPlan(output, config, inspected, selected, profile);
-
+  const rl = interactive ? readline.createInterface({ input, output }) : null;
+  let repoRoot;
+  let profile;
+  let selected;
   let task = String(options.task ?? '').trim();
-  if (!task && interactive) {
-    const rl = readline.createInterface({ input, output });
-    try {
-      task = (await rl.question(`\n${palette(output).cyan}What should Verenne change?${palette(output).reset}\n${palette(output).cyan}›${palette(output).reset} `, { signal: options.signal })).trim();
-    } finally {
-      rl.close();
+  try {
+    if (interactive) printHeader(output);
+    repoRoot = await resolveSessionRepoRoot({
+      input,
+      output,
+      interactive,
+      repoRoot: options.repoRoot,
+      cwd: options.cwd,
+      findRepoRoot: options.findRepoRoot,
+      readlineInterface: rl,
+      signal: options.signal,
+    });
+    if (!repoRoot) return null;
+    if (!interactive) printHeader(output);
+    const config = await load(repoRoot);
+    profile = options.profile ?? (config.profiles?.frontier ? 'frontier' : undefined);
+
+    output.write(`${palette(output).dim}Detecting compatible coding agents and provider-native model access…${palette(output).reset}\n`);
+    const inspected = await inspect(config, Object.keys(config.adapters ?? {}), { profile, signal: options.signal });
+    selected = selectAvailableAdapters(config, inspected);
+    if (!selected.length) {
+      printNoAdapters(output, inspected);
+      return null;
     }
-  } else if (!task) {
-    task = await readTaskInput(input, 1_000_000, options.signal);
+    printAdapterPlan(output, config, inspected, selected, profile);
+
+    if (!task && interactive) {
+      task = (await rl.question(`\n${palette(output).cyan}What should Verenne change?${palette(output).reset}\n${palette(output).cyan}›${palette(output).reset} `, { signal: options.signal })).trim();
+    } else if (!task) {
+      task = await readTaskInput(input, 1_000_000, options.signal);
+    }
+  } finally {
+    rl?.close();
   }
 
   if (!task) {

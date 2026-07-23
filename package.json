@@ -1,6 +1,6 @@
 {
   "name": "verenne",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Evidence-led orchestration for Claude Code, Codex, OpenCode, Gemini CLI, Aider, and custom coding agents.",
   "type": "module",
   "sideEffects": false,

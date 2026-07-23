@@ -30,6 +30,12 @@ npx --yes github:ShiningSon/verenne
 
 Both paths start the interactive session without a global Verenne install. Verenne detects installed agents, asks for the change in plain language, and chooses safe defaults. No Verenne account, daemon, or mandatory config file is required.
 
+You can start Verenne from any folder. If the current folder is not a Git repository, the interactive session asks for a project folder; drag a folder into the terminal or paste its path. You can also choose it directly:
+
+```bash
+npx verenne --repo "C:\path\to\your-project"
+```
+
 For a non-interactive run:
 
 ```bash

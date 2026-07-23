@@ -4,7 +4,7 @@ import path from 'node:path';
 
 export const APP_NAME = 'Verenne Code';
 export const CLI_NAME = 'verenne';
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.1';
 
 export function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
