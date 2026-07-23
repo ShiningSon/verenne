@@ -446,26 +446,6 @@ function outputPreview(value, maximum = 12_000) {
   return text.length <= maximum ? text : `${text.slice(0, maximum)}\n... output truncated in evidence preview ...`;
 }
 
-function windowsBatchInvocation(executable, args) {
-  if (process.platform !== 'win32' || !/\.(?:cmd|bat)$/i.test(executable)) return { executable, args, env: {} };
-  // CreateProcess cannot launch .cmd/.bat files directly. Pass the structured
-  // argv through an environment variable so no candidate-controlled value is
-  // interpolated into PowerShell source code.
-  const powershell = path.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
-  const script = [
-    '$spec = $env:VERENNE_BATCH_SPEC | ConvertFrom-Json',
-    '$command = [string]$spec.command',
-    '$arguments = @($spec.args | ForEach-Object { [string]$_ })',
-    '& $command @arguments',
-    'if ($null -eq $LASTEXITCODE) { exit 0 } else { exit $LASTEXITCODE }',
-  ].join('; ');
-  return {
-    executable: powershell,
-    args: ['-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script],
-    env: { VERENNE_BATCH_SPEC: JSON.stringify({ command: executable, args }) },
-  };
-}
-
 async function runOneGate(gate, verificationPath, binding, suite = 'candidate', signal) {
   throwIfAborted(signal);
   const base = {
@@ -507,7 +487,6 @@ async function runOneGate(gate, verificationPath, binding, suite = 'candidate', 
     executable = await executableOnPath(gate.command, verificationPath) ?? gate.command;
   }
 
-  const invocation = windowsBatchInvocation(executable, gate.args);
   const isolatedHome = await mkdtemp(path.join(os.tmpdir(), 'vrn-gate-home-'));
   const isolatedAppData = path.join(isolatedHome, 'appdata');
   const isolatedLocalAppData = path.join(isolatedHome, 'localappdata');
@@ -516,13 +495,16 @@ async function runOneGate(gate, verificationPath, binding, suite = 'candidate', 
   const startedAt = new Date().toISOString();
   let result;
   try {
-    result = await runProcess(invocation.executable, invocation.args, {
+    // runProcess owns the single Windows .cmd/.bat launch boundary. Keeping
+    // batch handling there avoids a second PowerShell process and ensures the
+    // same metacharacter checks, timeout, and process-tree cancellation apply
+    // to gates, adapters, and bootstrap commands.
+    result = await runProcess(executable, gate.args, {
       cwd,
       timeoutMs: gate.timeoutMs,
       maxOutputBytes: gate.maxOutputBytes,
       env: gateEnvironment({
         ...gate.env,
-        ...invocation.env,
         HOME: isolatedHome,
         USERPROFILE: isolatedHome,
         APPDATA: isolatedAppData,
